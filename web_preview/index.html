@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Student Attendance App</title>
+  <meta name="theme-color" content="#0F0E17">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #08070d;
+      color: #fff;
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    @media (max-width: 500px) {
+      body { padding: 0; }
+      .phone-frame {
+        height: 100vh !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        border: none !important;
+      }
+    }
+    .phone-frame {
+      width: 100%;
+      max-width: 440px;
+      height: min(880px, 94vh);
+      background: #0F0E17;
+      border-radius: 36px;
+      border: 3px solid #2A2A4A;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 30px rgba(79, 70, 229, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Top Bar */
+    .app-header {
+      background: #0F0E17;
+      padding: 16px 18px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #1f1e33;
+    }
+    .header-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      overflow: hidden;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    /* Content Area */
+    .screen-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .screen-container::-webkit-scrollbar { width: 4px; }
+    .screen-container::-webkit-scrollbar-thumb { background: #2A2A4A; border-radius: 4px; }
+    /* Cards */
+    .card {
+      background: #1A1A2E;
+      border: 1px solid #2A2A4A;
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .banner {
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      border-radius: 20px;
+      padding: 18px;
+      color: white;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.2);
+    }
+    .subject-pill {
+      background: rgba(124, 58, 237, 0.25);
+      color: #A78BFA;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+    }
+    /* Stats Row */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .stat-box {
+      background: #1A1A2E;
+      border: 1px solid #2A2A4A;
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .stat-box:hover {
+      transform: translateY(-2px);
+      border-color: #4F46E5;
+    }
+    .stat-val {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .stat-lbl {
+      font-size: 11px;
+      color: #8B8BA7;
+    }
+    /* Quick Actions */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+    .outline-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid #4F46E5;
+      color: #818CF8;
+      transition: 0.2s;
+    }
+    .outline-btn:hover { background: rgba(79, 70, 229, 0.15); }
+    .primary-btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      border: none;
+      background: #4F46E5;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .primary-btn:hover { background: #4338CA; }
+    /* Filter Chips */
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .chip {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      background: #1A1A2E;
+      color: #8B8BA7;
+      border: 1px solid #2A2A4A;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: 0.2s;
+    }
+    .chip.active {
+      background: #4F46E5;
+      color: #fff;
+      border-color: #4F46E5;
+    }
+    /* Attendance & Student Items */
+    .student-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #1A1A2E;
+      border: 1px solid #2A2A4A;
+      border-radius: 14px;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: white;
+      flex-shrink: 0;
+    }
+    .student-info { flex: 1; min-width: 0; }
+    .student-name { font-size: 14px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .student-meta { font-size: 11px; color: #8B8BA7; margin-top: 2px; }
+    /* Toggle Buttons */
+    .toggle-group { display: flex; gap: 4px; }
+    .toggle-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #2A2A4A;
+      background: #0F0E17;
+      color: #8B8BA7;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.15s;
+    }
+    .toggle-btn.present-active {
+      background: #10B981;
+      border-color: #10B981;
+      color: white;
+    }
+    .toggle-btn.absent-active {
+      background: #EF4444;
+      border-color: #EF4444;
+      color: white;
+    }
+    .toggle-btn.late-active {
+      background: #F59E0B;
+      border-color: #F59E0B;
+      color: white;
+    }
+    /* Bottom Navigation */
+    .bottom-nav {
+      background: #0F0E17;
+      border-top: 1px solid #2A2A4A;
+      display: flex;
+      justify-content: space-around;
+      padding: 6px 6px;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #6B7280;
+      transition: 0.2s;
+    }
+    .nav-item.active {
+      color: #818CF8;
+      background: rgba(79, 70, 229, 0.15);
+    }
+    .nav-item .material-icons { font-size: 20px; }
+    .nav-label { font-size: 10px; font-weight: 600; }
+    /* Modal */
+    .modal-backdrop {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal {
+      background: #1A1A2E;
+      border: 1px solid #2A2A4A;
+      border-radius: 20px;
+      padding: 20px;
+      width: 100%;
+      max-width: 380px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: #0F0E17;
+      border: 1px solid #2A2A4A;
+      border-radius: 10px;
+      padding: 11px 13px;
+      color: white;
+      font-size: 13px;
+      outline: none;
+      margin-top: 6px;
+      font-family: inherit;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: #4F46E5; }
+    textarea { resize: vertical; min-height: 60px; }
+    label { font-size: 11px; color: #8B8BA7; display: block; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-logo"><img src="/icon.png" style="width: 100%; height: 100%; object-fit: cover;"></div>
+    <div class="header-title" id="screenTitle" style="flex: 1;">Dashboard</div>
+    <button id="updateBtn" class="outline-btn" style="padding: 5px 8px; font-size: 11px; border-radius: 8px; flex: initial; border-color: #34D399; color: #34D399;" onclick="forceAppUpdate()" title="Update / Refresh App">
+      <span class="material-icons" style="font-size: 15px;">refresh</span>
+    </button>
+    <button id="roleToggleBtn" class="outline-btn" style="padding: 5px 10px; font-size: 11px; border-radius: 8px; flex: initial;" onclick="togglePortalMode()">
+      <span class="material-icons" style="font-size: 14px;">badge</span>
+      Student View
+    </button>
+  </div>
+
+  <!-- Screen Content -->
+  <div class="screen-container" id="screenBody">
+    <!-- Dynamic views render here -->
+  </div>
+
+  <!-- Bottom Nav (5 items) -->
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item active" onclick="switchTab(0)">
+      <span class="material-icons">dashboard</span>
+      <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(1)">
+      <span class="material-icons">menu_book</span>
+      <span class="nav-label">Subjects</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(2)">
+      <span class="material-icons">people</span>
+      <span class="nav-label">Students</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(3)">
+      <span class="material-icons">assignment</span>
+      <span class="nav-label">Attendance</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(4)">
+      <span class="material-icons">history</span>
+      <span class="nav-label">History</span>
+    </div>
+  </div>
+
+  <!-- Add/Edit Student Modal -->
+  <div class="modal-backdrop" id="studentModal">
+    <div class="modal">
+      <h3 style="margin-bottom: 8px;" id="studentModalTitle">Add Student</h3>
+      <label>Student ID *</label>
+      <input type="text" id="newStudentId" placeholder="e.g. 2024-001">
+      <label>Full Name *</label>
+      <input type="text" id="newStudentName" placeholder="e.g. Jane Doe">
+      <label>Course & Year *</label>
+      <input type="text" id="newStudentCourse" placeholder="e.g. BSCS-3A">
+      <div style="display: flex; gap: 10px; margin-top: 18px;">
+        <button class="outline-btn" style="border-color: #6B7280; color: #8B8BA7;" onclick="closeStudentModal()">Cancel</button>
+        <button class="primary-btn" style="flex: 1;" onclick="saveStudent()">Save Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Subject Modal -->
+  <div class="modal-backdrop" id="subjectModal">
+    <div class="modal">
+      <h3 style="margin-bottom: 8px;" id="subjectModalTitle">Register New Subject</h3>
+      <label>Subject Code *</label>
+      <input type="text" id="newSubjectCode" placeholder="e.g. CS101, MATH102">
+      <label>Subject Name *</label>
+      <input type="text" id="newSubjectName" placeholder="e.g. Data Structures & Algorithms">
+      <label>Description (Optional)</label>
+      <textarea id="newSubjectDesc" placeholder="e.g. Core Computer Science subject"></textarea>
+      <label>Schedule / Room (Optional)</label>
+      <input type="text" id="newSubjectSched" placeholder="e.g. MWF 9:00 AM - 10:30 AM (Room 302)">
+      <div style="display: flex; gap: 10px; margin-top: 18px;">
+        <button class="outline-btn" style="border-color: #6B7280; color: #8B8BA7;" onclick="closeSubjectModal()">Cancel</button>
+        <button class="primary-btn" style="flex: 1; background: #7C3AED;" onclick="saveSubject()">Save Subject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session Detail & Edit Modal -->
+  <div class="modal-backdrop" id="sessionDetailModal">
+    <div class="modal" style="max-width: 410px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 id="sessionModalDate" style="font-size: 16px;">Session Details</h3>
+        <button onclick="closeSessionDetailModal()" style="background: none; border: none; color: #8B8BA7; cursor: pointer;">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div id="sessionModalBody">
+        <!-- Renders session info and editable student list -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentTab = 0;
+  
+  // Data state
+  let subjects = [
+    { id: 1, code: 'CS101', name: 'Intro to Computer Science', desc: 'Fundamentals of computing', schedule: 'MWF 9:00 AM' },
+    { id: 2, code: 'MATH201', name: 'Discrete Mathematics', desc: 'Logic and sets', schedule: 'TTH 10:30 AM' },
+    { id: 3, code: 'IT102', name: 'Web Development', desc: 'HTML, CSS, JS and backend', schedule: 'Fri 1:00 PM' }
+  ];
+
+  let students = [
+    { student_id: '2024-001', full_name: 'Jane Doe', course_year: 'BSCS-3A' },
+    { student_id: '2024-002', full_name: 'John Smith', course_year: 'BSIT-2B' },
+    { student_id: '2024-003', full_name: 'Alice Cooper', course_year: 'BSCS-3A' },
+    { student_id: '2024-004', full_name: 'David Miller', course_year: 'BSEMC-1A' }
+  ];
+
+  // Sessions history with subject links & editable records
+  let attendanceSessions = [
+    {
+      id: 'sess-1',
+      date: '2026-10-21',
+      subjectId: 1,
+      subjectCode: 'CS101',
+      subjectName: 'Intro to Computer Science',
+      records: [
+        { studentId: '2024-001', status: 'Present', remarks: 'On time' },
+        { studentId: '2024-002', status: 'Present', remarks: '' },
+        { studentId: '2024-003', status: 'Late', remarks: 'Late 10 mins' },
+        { studentId: '2024-004', status: 'Absent', remarks: 'Excused sick leave' }
+      ]
+    },
+    {
+      id: 'sess-2',
+      date: '2026-10-20',
+      subjectId: 2,
+      subjectCode: 'MATH201',
+      subjectName: 'Discrete Mathematics',
+      records: [
+        { studentId: '2024-001', status: 'Present', remarks: '' },
+        { studentId: '2024-002', status: 'Present', remarks: '' },
+        { studentId: '2024-003', status: 'Present', remarks: '' },
+        { studentId: '2024-004', status: 'Absent', remarks: '' }
+      ]
+    },
+    {
+      id: 'sess-3',
+      date: '2026-10-15',
+      subjectId: 3,
+      subjectCode: 'IT102',
+      subjectName: 'Web Development',
+      records: [
+        { studentId: '2024-001', status: 'Present', remarks: '' },
+        { studentId: '2024-002', status: 'Present', remarks: '' },
+        { studentId: '2024-003', status: 'Present', remarks: '' },
+        { studentId: '2024-004', status: 'Present', remarks: '' }
+      ]
+    }
+  ];
+
+  // Current attendance taking state
+  let currentTakingDate = new Date().toISOString().slice(0,10);
+  let currentTakingSubjectId = 1;
+  let takingAttendanceMap = {
+    '2024-001': 'Present',
+    '2024-002': 'Present',
+    '2024-003': 'Present',
+    '2024-004': 'Absent'
+  };
+  let takingRemarksMap = {};
+
+  // History filtering state (Day, Week, Month, Year, All)
+  let historyTimeFilter = 'all'; // 'day' | 'week' | 'month' | 'year' | 'all'
+  let historySubjectFilter = null; // null for all subjects or subjectId number
+
+  const titles = ['Dashboard', 'Subjects', 'Students', 'Take Attendance', 'History'];
+  let isStudentMode = false;
+  let activeStudent = null;
+
+  function handleHash() {
+    if (isStudentMode) return;
+    const h = window.location.hash.toLowerCase();
+    if (h === '#subjects') switchTab(1, false);
+    else if (h === '#students') switchTab(2, false);
+    else if (h === '#attendance') switchTab(3, false);
+    else if (h === '#history') switchTab(4, false);
+    else switchTab(0, false);
+  }
+
+  function switchTab(index, updateHash = true) {
+    if (isStudentMode) return;
+    currentTab = index;
+    if (updateHash) {
+      const hashes = ['#dashboard', '#subjects', '#students', '#attendance', '#history'];
+      window.location.hash = hashes[index];
+    }
+    document.getElementById('screenTitle').innerText = titles[index];
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach((el, i) => {
+      el.classList.toggle('active', i === index);
+    });
+    renderScreen();
+  }
+
+  window.addEventListener('hashchange', handleHash);
+
+  function togglePortalMode() {
+    isStudentMode = !isStudentMode;
+    const btn = document.getElementById('roleToggleBtn');
+    const bottomNav = document.getElementById('bottomNav');
+    if (isStudentMode) {
+      btn.innerHTML = '<span class="material-icons" style="font-size: 14px;">admin_panel_settings</span> Teacher Mode';
+      btn.style.borderColor = '#34D399';
+      btn.style.color = '#34D399';
+      bottomNav.style.display = 'none';
+      if (!activeStudent && students.length > 0) activeStudent = students[0];
+      document.getElementById('screenTitle').innerText = 'Student Portal';
+    } else {
+      btn.innerHTML = '<span class="material-icons" style="font-size: 14px;">badge</span> Student View';
+      btn.style.borderColor = '#4F46E5';
+      btn.style.color = '#818CF8';
+      bottomNav.style.display = 'flex';
+      switchTab(currentTab, false);
+      return;
+    }
+    renderScreen();
+  }
+
+  function renderScreen() {
+    const container = document.getElementById('screenBody');
+    if (isStudentMode) {
+      renderStudentDashboard(container);
+      return;
+    }
+    if (currentTab === 0) renderDashboard(container);
+    else if (currentTab === 1) renderSubjects(container);
+    else if (currentTab === 2) renderStudents(container);
+    else if (currentTab === 3) renderAttendance(container);
+    else if (currentTab === 4) renderHistory(container);
+  }
+
+  // ─── DASHBOARD ──────────────────────────────────────────────────────────────
+  function renderDashboard(container) {
+    let totalPresent = 0, totalRecords = 0;
+    attendanceSessions.forEach(s => {
+      s.records.forEach(r => {
+        totalRecords++;
+        if (r.status === 'Present' || r.status === 'Late') totalPresent++;
+      });
+    });
+    const avgRate = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0;
+
+    container.innerHTML = `
+      <div class="banner">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="/icon.png" style="width: 34px; height: 34px; border-radius: 8px;">
+            <div>
+              <div style="font-size: 14px; font-weight: 700;">AttendTrack</div>
+              <div style="font-size: 10px; color: rgba(255,255,255,0.7);">v1.0.1 • Subjects & Period Tracking</div>
+            </div>
+          </div>
+          <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid #10B981;">✓ Live Sync</span>
+        </div>
+        <h2 style="font-size: 20px; font-weight: 700; margin-top: 14px;">Student Attendance</h2>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.75);">Manage subjects, students, and attendance records</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box" onclick="switchTab(2)">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="material-icons" style="color: #818CF8; font-size: 20px;">people</span>
+            <span class="material-icons" style="color: #818CF8; font-size: 14px;">arrow_forward_ios</span>
+          </div>
+          <div class="stat-val" style="color: #818CF8;">${students.length}</div>
+          <div class="stat-lbl">Students</div>
+        </div>
+        <div class="stat-box" onclick="switchTab(1)">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="material-icons" style="color: #A78BFA; font-size: 20px;">menu_book</span>
+            <span class="material-icons" style="color: #A78BFA; font-size: 14px;">arrow_forward_ios</span>
+          </div>
+          <div class="stat-val" style="color: #A78BFA;">${subjects.length}</div>
+          <div class="stat-lbl">Subjects</div>
+        </div>
+        <div class="stat-box" onclick="switchTab(4)">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="material-icons" style="color: #34D399; font-size: 20px;">calendar_month</span>
+            <span class="material-icons" style="color: #34D399; font-size: 14px;">arrow_forward_ios</span>
+          </div>
+          <div class="stat-val" style="color: #34D399;">${attendanceSessions.length}</div>
+          <div class="stat-lbl">Sessions</div>
+        </div>
+        <div class="stat-box" onclick="switchTab(4)">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="material-icons" style="color: #FBBF24; font-size: 20px;">trending_up</span>
+            <span class="material-icons" style="color: #FBBF24; font-size: 14px;">arrow_forward_ios</span>
+          </div>
+          <div class="stat-val" style="color: #FBBF24;">${avgRate}%</div>
+          <div class="stat-lbl">Avg Rate</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="outline-btn" onclick="switchTab(3)">
+          <span class="material-icons" style="font-size: 18px;">assignment_turned_in</span>
+          Take Attendance
+        </button>
+        <button class="outline-btn" style="border-color: #7C3AED; color: #A78BFA;" onclick="openSubjectModal()">
+          <span class="material-icons" style="font-size: 18px;">add_circle_outline</span>
+          New Subject
+        </button>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="font-size: 15px; font-weight: 600;">Recent Sessions</h3>
+          <span style="font-size: 12px; color: #818CF8; cursor: pointer;" onclick="switchTab(4)">View All</span>
+        </div>
+        ${attendanceSessions.slice(0, 4).map(s => {
+          const present = s.records.filter(r => r.status === 'Present' || r.status === 'Late').length;
+          const rate = s.records.length ? Math.round((present / s.records.length) * 100) : 0;
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2A2A4A; cursor: pointer;" onclick="openSessionDetail('${s.id}')">
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 14px; font-weight: 600;">${s.date}</span>
+                  ${s.subjectCode ? `<span class="subject-pill">${s.subjectCode}</span>` : ''}
+                </div>
+                <div style="font-size: 11px; color: #8B8BA7; margin-top: 2px;">${present}/${s.records.length} Present • Tap to edit</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-weight: 700; color: ${rate>=80?'#10B981':'#F59E0B'}">${rate}%</div>
+                <span class="material-icons" style="font-size: 14px; color: #8B8BA7;">edit</span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  // ─── SUBJECTS SCREEN ────────────────────────────────────────────────────────
+  let subjectSearchQuery = '';
+  function renderSubjects(container) {
+    const filtered = subjects.filter(s => 
+      s.code.toLowerCase().includes(subjectSearchQuery.toLowerCase()) ||
+      s.name.toLowerCase().includes(subjectSearchQuery.toLowerCase())
+    );
+
+    container.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 13px; color: #8B8BA7;">${subjects.length} registered subjects</span>
+        <button class="outline-btn" style="padding: 6px 12px; font-size: 12px; flex: initial; border-color: #7C3AED; color: #A78BFA;" onclick="openSubjectModal()">
+          <span class="material-icons" style="font-size: 14px;">add</span> Register Subject
+        </button>
+      </div>
+
+      <input type="text" placeholder="Search subjects by code or name..." value="${subjectSearchQuery}" oninput="subjectSearchQuery = this.value; renderSubjects(document.getElementById('screenBody'))" style="margin-top: 0;">
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        ${filtered.length === 0 ? `
+          <div class="card" style="text-align: center; padding: 32px 16px;">
+            <span class="material-icons" style="font-size: 40px; color: #A78BFA;">menu_book</span>
+            <div style="font-weight: 600; margin-top: 8px;">No subjects found</div>
+            <div style="font-size: 12px; color: #8B8BA7; margin-top: 4px;">Register a new subject using the button above</div>
+          </div>
+        ` : filtered.map(s => `
+          <div class="card" style="padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span class="subject-pill" style="font-size: 11px;">${s.code}</span>
+                  <span style="font-size: 14px; font-weight: 700;">${s.name}</span>
+                </div>
+                ${s.desc ? `<div style="font-size: 12px; color: #8B8BA7; margin-top: 4px;">${s.desc}</div>` : ''}
+                ${s.schedule ? `
+                  <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: #A78BFA; margin-top: 6px;">
+                    <span class="material-icons" style="font-size: 13px;">schedule</span>
+                    <span>${s.schedule}</span>
+                  </div>
+                ` : ''}
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <span class="material-icons" style="color: #818CF8; cursor: pointer; font-size: 18px;" onclick="editSubject(${s.id})">edit</span>
+                <span class="material-icons" style="color: #EF4444; cursor: pointer; font-size: 18px;" onclick="deleteSubject(${s.id})">delete_outline</span>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  let editingSubjectId = null;
+  function openSubjectModal(subject = null) {
+    editingSubjectId = subject ? subject.id : null;
+    document.getElementById('subjectModalTitle').innerText = subject ? 'Edit Subject' : 'Register New Subject';
+    document.getElementById('newSubjectCode').value = subject ? subject.code : '';
+    document.getElementById('newSubjectName').value = subject ? subject.name : '';
+    document.getElementById('newSubjectDesc').value = subject ? (subject.desc || '') : '';
+    document.getElementById('newSubjectSched').value = subject ? (subject.schedule || '') : '';
+    document.getElementById('subjectModal').style.display = 'flex';
+  }
+  function closeSubjectModal() { document.getElementById('subjectModal').style.display = 'none'; }
+  function saveSubject() {
+    const code = document.getElementById('newSubjectCode').value.trim();
+    const name = document.getElementById('newSubjectName').value.trim();
+    const desc = document.getElementById('newSubjectDesc').value.trim();
+    const sched = document.getElementById('newSubjectSched').value.trim();
+    if (!code || !name) return alert('Subject Code and Subject Name are required!');
+    
+    if (editingSubjectId) {
+      const idx = subjects.findIndex(s => s.id === editingSubjectId);
+      if (idx !== -1) subjects[idx] = { id: editingSubjectId, code, name, desc, schedule: sched };
+    } else {
+      subjects.push({ id: Date.now(), code, name, desc, schedule: sched });
+    }
+    closeSubjectModal();
+    renderScreen();
+  }
+  function editSubject(id) {
+    const s = subjects.find(x => x.id === id);
+    if (s) openSubjectModal(s);
+  }
+  function deleteSubject(id) {
+    if (confirm('Delete this subject? Attendance records will be retained.')) {
+      subjects = subjects.filter(s => s.id !== id);
+      renderScreen();
+    }
+  }
+
+  // ─── STUDENTS SCREEN ────────────────────────────────────────────────────────
+  function renderStudents(container) {
+    container.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 13px; color: #8B8BA7;">${students.length} students enrolled</span>
+        <button class="outline-btn" style="padding: 6px 12px; font-size: 12px; flex: initial;" onclick="openStudentModal()">+ Add Student</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        ${students.map((s, idx) => `
+          <div class="student-item">
+            <div class="avatar">${s.full_name.split(' ').map(n=>n[0]).join('')}</div>
+            <div class="student-info">
+              <div class="student-name">${s.full_name}</div>
+              <div class="student-meta">${s.student_id} • ${s.course_year}</div>
+            </div>
+            <span class="material-icons" style="color: #EF4444; cursor: pointer; font-size: 20px;" onclick="deleteStudent(${idx})">delete_outline</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  function openStudentModal() { document.getElementById('studentModal').style.display = 'flex'; }
+  function closeStudentModal() { document.getElementById('studentModal').style.display = 'none'; }
+  function saveStudent() {
+    const id = document.getElementById('newStudentId').value.trim();
+    const name = document.getElementById('newStudentName').value.trim();
+    const course = document.getElementById('newStudentCourse').value.trim();
+    if (!id || !name || !course) return alert('Please fill in all fields');
+    if (students.find(s => s.student_id === id)) return alert('Student ID already exists');
+    students.push({ student_id: id, full_name: name, course_year: course });
+    takingAttendanceMap[id] = 'Present';
+    closeStudentModal();
+    renderScreen();
+  }
+  function deleteStudent(idx) {
+    if (confirm('Delete this student?')) {
+      const sid = students[idx].student_id;
+      delete takingAttendanceMap[sid];
+      students.splice(idx, 1);
+      renderScreen();
+    }
+  }
+
+  // ─── TAKE ATTENDANCE SCREEN ─────────────────────────────────────────────────
+  function renderAttendance(container) {
+    const presentCount = Object.values(takingAttendanceMap).filter(v => v === 'Present' || v === 'Late').length;
+    const curSubject = subjects.find(s => s.id === currentTakingSubjectId);
+
+    container.innerHTML = `
+      <!-- Date Picker Bar -->
+      <div class="card" style="background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none; padding: 14px 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.7);">Attendance Date</div>
+            <div style="font-size: 15px; font-weight: 700;">${currentTakingDate}</div>
+          </div>
+          <input type="date" value="${currentTakingDate}" onchange="currentTakingDate = this.value; renderAttendance(document.getElementById('screenBody'))" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; padding: 5px 8px; font-size: 12px; outline: none;">
+        </div>
+      </div>
+
+      <!-- Subject Selector with Quick Register -->
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <select onchange="currentTakingSubjectId = this.value ? Number(this.value) : null; renderAttendance(document.getElementById('screenBody'))" style="flex: 1; margin-top: 0; background: #1A1A2E; border: 1px solid #2A2A4A; border-radius: 12px; padding: 10px 12px; color: white; font-size: 13px;">
+          <option value="">No Subject (General)</option>
+          ${subjects.map(s => `<option value="${s.id}" ${s.id === currentTakingSubjectId ? 'selected':''}>[${s.code}] ${s.name}</option>`).join('')}
+        </select>
+        <button class="outline-btn" style="flex: initial; padding: 8px 12px; border-radius: 12px; border-color: #7C3AED; color: #A78BFA;" onclick="openSubjectModal()" title="Register New Subject">
+          <span class="material-icons" style="font-size: 16px;">add</span>
+        </button>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="btn-row">
+        <button class="outline-btn" style="border-color: #10B981; color: #10B981;" onclick="markAllTaking('Present')">All Present</button>
+        <button class="outline-btn" style="border-color: #EF4444; color: #EF4444;" onclick="markAllTaking('Absent')">All Absent</button>
+      </div>
+
+      <div style="font-size: 12px; color: #8B8BA7; display: flex; justify-content: space-between;">
+        <span>${students.length} students</span>
+        <span style="color: #10B981; font-weight: 600;">${presentCount} Present</span>
+      </div>
+
+      <!-- Student Attendance List -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        ${students.map(s => {
+          const status = takingAttendanceMap[s.student_id] || 'Present';
+          const remarks = takingRemarksMap[s.student_id] || '';
+          return `
+            <div class="student-item" style="padding: 10px 12px;">
+              <div class="avatar">${s.full_name.split(' ').map(n=>n[0]).join('')}</div>
+              <div class="student-info">
+                <div class="student-name">${s.full_name}</div>
+                <div class="student-meta">${s.student_id} • ${s.course_year}</div>
+                ${remarks ? `<div style="font-size: 11px; color: #FBBF24; font-style: italic; margin-top: 2px;">${remarks}</div>` : ''}
+              </div>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <div class="toggle-group">
+                  <button class="toggle-btn ${status==='Present'?'present-active':''}" onclick="setTakingStatus('${s.student_id}', 'Present')">P</button>
+                  <button class="toggle-btn ${status==='Absent'?'absent-active':''}" onclick="setTakingStatus('${s.student_id}', 'Absent')">A</button>
+                  <button class="toggle-btn ${status==='Late'?'late-active':''}" onclick="setTakingStatus('${s.student_id}', 'Late')">L</button>
+                </div>
+                <button onclick="promptRemark('${s.student_id}', '${s.full_name}')" style="background: none; border: none; color: #8B8BA7; cursor: pointer; padding: 4px;">
+                  <span class="material-icons" style="font-size: 18px;">note_add</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <button class="primary-btn" onclick="saveAttendanceSession()">
+        <span class="material-icons">save</span>
+        Save Attendance Session
+      </button>
+    `;
+  }
+
+  function setTakingStatus(sid, status) {
+    takingAttendanceMap[sid] = status;
+    renderAttendance(document.getElementById('screenBody'));
+  }
+  function markAllTaking(status) {
+    students.forEach(s => takingAttendanceMap[s.student_id] = status);
+    renderAttendance(document.getElementById('screenBody'));
+  }
+  function promptRemark(sid, name) {
+    const cur = takingRemarksMap[sid] || '';
+    const res = prompt(`Remarks for ${name}:`, cur);
+    if (res !== null) {
+      takingRemarksMap[sid] = res.trim();
+      renderAttendance(document.getElementById('screenBody'));
+    }
+  }
+
+  function saveAttendanceSession() {
+    const curSubject = subjects.find(s => s.id === currentTakingSubjectId);
+    const recs = students.map(s => ({
+      studentId: s.student_id,
+      status: takingAttendanceMap[s.student_id] || 'Present',
+      remarks: takingRemarksMap[s.student_id] || ''
+    }));
+
+    // Find if session for date and subject already exists
+    const existingIdx = attendanceSessions.findIndex(s => s.date === currentTakingDate && s.subjectId === currentTakingSubjectId);
+    const sessionObj = {
+      id: existingIdx !== -1 ? attendanceSessions[existingIdx].id : 'sess-' + Date.now(),
+      date: currentTakingDate,
+      subjectId: currentTakingSubjectId,
+      subjectCode: curSubject ? curSubject.code : null,
+      subjectName: curSubject ? curSubject.name : null,
+      records: recs
+    };
+
+    if (existingIdx !== -1) {
+      attendanceSessions[existingIdx] = sessionObj;
+    } else {
+      attendanceSessions.unshift(sessionObj);
+    }
+
+    alert('Attendance saved successfully for ' + currentTakingDate + (curSubject ? ' (' + curSubject.code + ')' : '') + '!');
+    switchTab(4); // Navigate to history to see recorded session
+  }
+
+  // ─── HISTORY SCREEN (Day, Week, Month, Year, All + Subject Filter) ──────────
+  function renderHistory(container) {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0,10);
+
+    // Filter sessions based on time filter
+    const filtered = attendanceSessions.filter(s => {
+      // Subject filter
+      if (historySubjectFilter !== null && s.subjectId !== historySubjectFilter) {
+        return false;
+      }
+
+      // Time filter
+      if (historyTimeFilter === 'all') return true;
+      const sDate = new Date(s.date);
+      if (historyTimeFilter === 'day') {
+        return s.date === todayStr;
+      }
+      if (historyTimeFilter === 'week') {
+        const diffDays = (today - sDate) / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 7;
+      }
+      if (historyTimeFilter === 'month') {
+        return sDate.getFullYear() === today.getFullYear() && sDate.getMonth() === today.getMonth();
+      }
+      if (historyTimeFilter === 'year') {
+        return sDate.getFullYear() === today.getFullYear();
+      }
+      return true;
+    });
+
+    // Summary calculation
+    let totalPresent = 0, totalCount = 0;
+    filtered.forEach(s => {
+      s.records.forEach(r => {
+        totalCount++;
+        if (r.status === 'Present' || r.status === 'Late') totalPresent++;
+      });
+    });
+    const avgRate = totalCount > 0 ? Math.round((totalPresent / totalCount) * 100) : 0;
+
+    container.innerHTML = `
+      <!-- Time Range Filter Chips -->
+      <div class="filter-chips">
+        <div class="chip ${historyTimeFilter==='day'?'active':''}" onclick="setHistoryTimeFilter('day')">Today (Day)</div>
+        <div class="chip ${historyTimeFilter==='week'?'active':''}" onclick="setHistoryTimeFilter('week')">This Week</div>
+        <div class="chip ${historyTimeFilter==='month'?'active':''}" onclick="setHistoryTimeFilter('month')">This Month</div>
+        <div class="chip ${historyTimeFilter==='year'?'active':''}" onclick="setHistoryTimeFilter('year')">This Year</div>
+        <div class="chip ${historyTimeFilter==='all'?'active':''}" onclick="setHistoryTimeFilter('all')">All Time</div>
+      </div>
+
+      <!-- Subject Filter Dropdown -->
+      <select onchange="historySubjectFilter = this.value ? Number(this.value) : null; renderHistory(document.getElementById('screenBody'))" style="margin-top: 0; background: #1A1A2E; border: 1px solid #2A2A4A; border-radius: 12px; padding: 9px 12px; color: white; font-size: 13px;">
+        <option value="">All Subjects</option>
+        ${subjects.map(s => `<option value="${s.id}" ${s.id === historySubjectFilter ? 'selected':''}>${s.code} - ${s.name}</option>`).join('')}
+      </select>
+
+      <!-- Stat summary row for current filter -->
+      <div class="card" style="padding: 12px 14px; background: rgba(79, 70, 229, 0.12); border-color: rgba(79, 70, 229, 0.3);">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); text-align: center;">
+          <div>
+            <div style="font-size: 16px; font-weight: 700; color: #818CF8;">${filtered.length}</div>
+            <div style="font-size: 10px; color: #8B8BA7;">Sessions</div>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 700; color: #10B981;">${totalPresent}</div>
+            <div style="font-size: 10px; color: #8B8BA7;">Present</div>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 700; color: #EF4444;">${totalCount - totalPresent}</div>
+            <div style="font-size: 10px; color: #8B8BA7;">Absent</div>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 700; color: ${avgRate>=80?'#10B981':'#F59E0B'};">${avgRate}%</div>
+            <div style="font-size: 10px; color: #8B8BA7;">Avg Rate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sessions List -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        ${filtered.length === 0 ? `
+          <div class="card" style="text-align: center; padding: 32px 16px;">
+            <span class="material-icons" style="font-size: 36px; color: #6B7280;">history</span>
+            <div style="font-weight: 600; margin-top: 8px;">No sessions found</div>
+            <div style="font-size: 12px; color: #8B8BA7; margin-top: 4px;">Try a different time filter or record new attendance</div>
+          </div>
+        ` : filtered.map(s => {
+          const present = s.records.filter(r => r.status === 'Present' || r.status === 'Late').length;
+          const rate = s.records.length ? Math.round((present / s.records.length) * 100) : 0;
+          return `
+            <div class="card" style="cursor: pointer; transition: 0.2s;" onclick="openSessionDetail('${s.id}')">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 15px; font-weight: 700;">${s.date}</span>
+                    ${s.subjectCode ? `<span class="subject-pill">${s.subjectCode}</span>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #8B8BA7; margin-top: 4px;">
+                    <span style="color: #10B981; font-weight: 600;">${present} Present</span> • 
+                    <span style="color: #EF4444; font-weight: 600;">${s.records.length - present} Absent</span>
+                    ${s.subjectName ? ` • ${s.subjectName}` : ''}
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 18px; font-weight: 700; color: ${rate>=80?'#10B981':'#F59E0B'}">${rate}%</div>
+                  <span style="font-size: 11px; color: #818CF8; display: flex; align-items: center; justify-content: flex-end; gap: 2px;">
+                    <span class="material-icons" style="font-size: 12px;">edit</span> Edit
+                  </span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  function setHistoryTimeFilter(f) {
+    historyTimeFilter = f;
+    renderHistory(document.getElementById('screenBody'));
+  }
+
+  // ─── SESSION DETAIL & EDIT MODAL ────────────────────────────────────────────
+  let activeSessionId = null;
+  let isEditingSession = false;
+
+  function openSessionDetail(sessId) {
+    activeSessionId = sessId;
+    isEditingSession = false;
+    renderSessionDetailModal();
+    document.getElementById('sessionDetailModal').style.display = 'flex';
+  }
+  function closeSessionDetailModal() {
+    document.getElementById('sessionDetailModal').style.display = 'none';
+  }
+
+  function renderSessionDetailModal() {
+    const sess = attendanceSessions.find(s => s.id === activeSessionId);
+    if (!sess) return;
+
+    document.getElementById('sessionModalDate').innerText = sess.date + (sess.subjectCode ? ' • ' + sess.subjectCode : '');
+    const body = document.getElementById('sessionModalBody');
+    const present = sess.records.filter(r => r.status === 'Present' || r.status === 'Late').length;
+    const rate = sess.records.length ? Math.round((present / sess.records.length) * 100) : 0;
+
+    body.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: #0F0E17; border-radius: 12px;">
+        <div>
+          <div style="font-size: 12px; color: #8B8BA7;">${sess.records.length} Students • ${present} Present</div>
+          ${sess.subjectName ? `<div style="font-size: 11px; color: #A78BFA;">${sess.subjectName}</div>` : ''}
+        </div>
+        <div style="font-size: 16px; font-weight: 700; color: ${rate>=80?'#10B981':'#F59E0B'};">${rate}%</div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 12px; color: #8B8BA7;">${isEditingSession ? 'Click P/A/L to edit status' : 'Recorded Student Attendance'}</span>
+        <button class="outline-btn" style="padding: 4px 10px; font-size: 11px; flex: initial; border-color: ${isEditingSession ? '#F59E0B' : '#818CF8'}; color: ${isEditingSession ? '#F59E0B' : '#818CF8'};" onclick="toggleEditSessionMode()">
+          <span class="material-icons" style="font-size: 14px;">${isEditingSession ? 'close' : 'edit'}</span>
+          ${isEditingSession ? 'Cancel Edit' : 'Edit Records'}
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; max-height: 48vh; overflow-y: auto; padding-right: 4px;">
+        ${sess.records.map(r => {
+          const s = students.find(x => x.student_id === r.studentId) || { full_name: r.studentId, course_year: '' };
+          return `
+            <div class="student-item" style="padding: 8px 10px; background: #0F0E17;">
+              <div class="avatar" style="width: 34px; height: 34px; font-size: 12px;">${s.full_name.split(' ').map(n=>n[0]).join('')}</div>
+              <div class="student-info">
+                <div class="student-name" style="font-size: 13px;">${s.full_name}</div>
+                <div class="student-meta" style="font-size: 10px;">${r.studentId} ${r.remarks ? `• ${r.remarks}` : ''}</div>
+              </div>
+              ${isEditingSession ? `
+                <div class="toggle-group">
+                  <button class="toggle-btn ${r.status==='Present'?'present-active':''}" style="width: 28px; height: 28px; font-size: 11px;" onclick="updateSessionRecord('${r.studentId}', 'Present')">P</button>
+                  <button class="toggle-btn ${r.status==='Absent'?'absent-active':''}" style="width: 28px; height: 28px; font-size: 11px;" onclick="updateSessionRecord('${r.studentId}', 'Absent')">A</button>
+                  <button class="toggle-btn ${r.status==='Late'?'late-active':''}" style="width: 28px; height: 28px; font-size: 11px;" onclick="updateSessionRecord('${r.studentId}', 'Late')">L</button>
+                </div>
+              ` : `
+                <span class="badge" style="background: ${r.status==='Present'?'rgba(16, 185, 129, 0.2)':r.status==='Late'?'rgba(245, 158, 11, 0.2)':'rgba(239, 68, 68, 0.2)'}; color: ${r.status==='Present'?'#10B981':r.status==='Late'?'#F59E0B':'#EF4444'}; font-size: 11px;">
+                  ${r.status}
+                </span>
+              `}
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 14px;">
+        <button class="outline-btn" style="border-color: #EF4444; color: #EF4444;" onclick="deleteSession('${sess.id}')">
+          <span class="material-icons" style="font-size: 16px;">delete</span> Delete
+        </button>
+        ${isEditingSession ? `
+          <button class="primary-btn" style="flex: 2; padding: 10px;" onclick="saveEditedSession()">
+            <span class="material-icons" style="font-size: 16px;">check</span> Save Changes
+          </button>
+        ` : `
+          <button class="primary-btn" style="flex: 2; padding: 10px;" onclick="closeSessionDetailModal()">
+            Done
+          </button>
+        `}
+      </div>
+    `;
+  }
+
+  function toggleEditSessionMode() {
+    isEditingSession = !isEditingSession;
+    renderSessionDetailModal();
+  }
+
+  function updateSessionRecord(sid, newStatus) {
+    const sess = attendanceSessions.find(s => s.id === activeSessionId);
+    if (!sess) return;
+    const rec = sess.records.find(r => r.studentId === sid);
+    if (rec) rec.status = newStatus;
+    renderSessionDetailModal();
+  }
+
+  function saveEditedSession() {
+    isEditingSession = false;
+    alert('Session attendance updated successfully!');
+    renderSessionDetailModal();
+    renderScreen();
+  }
+
+  function deleteSession(id) {
+    if (confirm('Are you sure you want to delete this session?')) {
+      attendanceSessions = attendanceSessions.filter(s => s.id !== id);
+      closeSessionDetailModal();
+      renderScreen();
+    }
+  }
+
+  // ─── STUDENT PORTAL ─────────────────────────────────────────────────────────
+  function renderStudentDashboard(container) {
+    if (!activeStudent && students.length > 0) activeStudent = students[0];
+    if (!activeStudent) return;
+
+    let studentRecords = [];
+    attendanceSessions.forEach(s => {
+      const found = s.records.find(r => r.studentId === activeStudent.student_id);
+      if (found) {
+        studentRecords.push({
+          date: s.date,
+          subjectCode: s.subjectCode,
+          subjectName: s.subjectName,
+          status: found.status,
+          remarks: found.remarks
+        });
+      }
+    });
+
+    const attended = studentRecords.filter(r => r.status === 'Present' || r.status === 'Late').length;
+    const rate = studentRecords.length ? Math.round((attended / studentRecords.length) * 100) : 0;
+    const todayStr = new Date().toISOString().slice(0,10);
+    const hasAttendedToday = studentRecords.some(r => r.date === todayStr && (r.status === 'Present' || r.status === 'Late'));
+
+    container.innerHTML = `
+      <div class="banner">
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div style="width: 50px; height: 50px; border-radius: 14px; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;">
+            ${activeStudent.full_name.split(' ').map(n=>n[0]).join('')}
+          </div>
+          <div style="flex: 1;">
+            <div style="font-size: 17px; font-weight: 700;">${activeStudent.full_name}</div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.8);">${activeStudent.student_id} • ${activeStudent.course_year}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Switch Student -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 12px; color: #8B8BA7;">Switch Student:</span>
+        <select onchange="selectStudent(this.value)" style="flex: 1; margin-top: 0; background: #1A1A2E; border: 1px solid #2A2A4A; border-radius: 8px; color: white; padding: 6px 10px; font-size: 12px;">
+          ${students.map(s => `<option value="${s.student_id}" ${s.student_id === activeStudent.student_id ? 'selected':''}>${s.full_name} (${s.student_id})</option>`).join('')}
+        </select>
+      </div>
+
+      <!-- Self Check-In -->
+      <div class="card" style="border-color: ${hasAttendedToday ? '#10B981' : '#F59E0B'};">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div>
+            <div style="font-size: 11px; color: #8B8BA7;">Today's Attendance</div>
+            <div style="font-size: 14px; font-weight: 600;">${todayStr}</div>
+          </div>
+          <span class="badge" style="background: ${hasAttendedToday ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)'}; color: ${hasAttendedToday ? '#10B981' : '#F59E0B'}; border: 1px solid ${hasAttendedToday ? '#10B981' : '#F59E0B'};">
+            ${hasAttendedToday ? '✓ Present' : 'Pending Check-In'}
+          </span>
+        </div>
+        ${!hasAttendedToday ? `
+          <button class="primary-btn" style="background: #10B981;" onclick="studentSelfCheckIn()">
+            <span class="material-icons">fingerprint</span> Self Check-In for Today
+          </button>
+        ` : `
+          <div style="font-size: 12px; color: #10B981; display: flex; align-items: center; gap: 6px;">
+            <span class="material-icons" style="font-size: 16px;">check_circle</span>
+            <span>You are checked in for today!</span>
+          </div>
+        `}
+      </div>
+
+      <!-- My Attendance Stats -->
+      <div class="card">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Attendance Overview</h4>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); text-align: center;">
+          <div>
+            <div style="font-size: 18px; font-weight: 700; color: #818CF8;">${studentRecords.length}</div>
+            <div style="font-size: 10px; color: #8B8BA7;">Classes</div>
+          </div>
+          <div>
+            <div style="font-size: 18px; font-weight: 700; color: #10B981;">${attended}</div>
+            <div style="font-size: 10px; color: #8B8BA7;">Attended</div>
+          </div>
+          <div>
+            <div style="font-size: 18px; font-weight: 700; color: #EF4444;">${studentRecords.length - attended}</div>
+            <div style="font-size: 10px; color: #8B8BA7;">Missed</div>
+          </div>
+          <div>
+            <div style="font-size: 18px; font-weight: 700; color: ${rate>=80?'#10B981':'#F59E0B'};">${rate}%</div>
+            <div style="font-size: 10px; color: #8B8BA7;">Rate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Past Records -->
+      <div class="card">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">My Subject History</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          ${studentRecords.length === 0 ? `
+            <div style="font-size: 12px; color: #8B8BA7;">No recorded attendance yet.</div>
+          ` : studentRecords.map(r => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #2A2A4A;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 13px; font-weight: 600;">${r.date}</span>
+                  ${r.subjectCode ? `<span class="subject-pill">${r.subjectCode}</span>` : ''}
+                </div>
+                ${r.subjectName ? `<div style="font-size: 11px; color: #8B8BA7;">${r.subjectName}</div>` : ''}
+                ${r.remarks ? `<div style="font-size: 10px; color: #FBBF24; font-style: italic;">${r.remarks}</div>` : ''}
+              </div>
+              <span class="badge" style="background: ${r.status==='Present'?'rgba(16, 185, 129, 0.2)':r.status==='Late'?'rgba(245, 158, 11, 0.2)':'rgba(239, 68, 68, 0.2)'}; color: ${r.status==='Present'?'#10B981':r.status==='Late'?'#F59E0B':'#EF4444'};">
+                ${r.status}
+              </span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <button class="outline-btn" onclick="togglePortalMode()">
+        <span class="material-icons">arrow_back</span> Return to Teacher Portal
+      </button>
+    `;
+  }
+
+  function selectStudent(sid) {
+    activeStudent = students.find(s => s.student_id === sid);
+    renderScreen();
+  }
+
+  function studentSelfCheckIn() {
+    if (!activeStudent) return;
+    const todayStr = new Date().toISOString().slice(0,10);
+    // Add record to latest session or create one
+    let sess = attendanceSessions.find(s => s.date === todayStr);
+    if (!sess) {
+      sess = {
+        id: 'sess-' + Date.now(),
+        date: todayStr,
+        subjectId: subjects.length ? subjects[0].id : null,
+        subjectCode: subjects.length ? subjects[0].code : null,
+        subjectName: subjects.length ? subjects[0].name : null,
+        records: []
+      };
+      attendanceSessions.unshift(sess);
+    }
+    const rec = sess.records.find(r => r.studentId === activeStudent.student_id);
+    if (rec) {
+      rec.status = 'Present';
+      rec.remarks = 'Self Checked In';
+    } else {
+      sess.records.push({ studentId: activeStudent.student_id, status: 'Present', remarks: 'Self Checked In' });
+    }
+    alert('Attendance confirmed! You are marked Present today.');
+    renderScreen();
+  }
+
+  // Initial render
+  renderScreen();
+
+  // Force update helper (clears caches, unregisters old workers, reloads)
+  async function forceAppUpdate() {
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let reg of registrations) {
+          await reg.update();
+        }
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+    } catch (_) {}
+    window.location.reload(true);
+  }
+
+  // Progressive Web App: Automatic Background Update Detector
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        // Check for updates on startup
+        reg.update();
+
+        reg.onupdatefound = () => {
+          const installingWorker = reg.installing;
+          if (installingWorker) {
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdateBanner();
+              }
+            };
+          }
+        };
+      }).catch((err) => console.log('[PWA] Service worker registration:', err));
+    });
+  }
+
+  function showUpdateBanner() {
+    let banner = document.getElementById('updateBanner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'updateBanner';
+      banner.style.position = 'fixed';
+      banner.style.bottom = '20px';
+      banner.style.left = '50%';
+      banner.style.transform = 'translateX(-50%)';
+      banner.style.zIndex = '9999';
+      banner.style.background = 'linear-gradient(135deg, #4F46E5, #7C3AED)';
+      banner.style.color = '#fff';
+      banner.style.padding = '12px 18px';
+      banner.style.borderRadius = '16px';
+      banner.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)';
+      banner.style.display = 'flex';
+      banner.style.alignItems = 'center';
+      banner.style.gap = '12px';
+      banner.style.fontSize = '13px';
+      banner.style.fontWeight = '500';
+      banner.innerHTML = `
+        <span class="material-icons" style="color: #34D399; font-size: 20px;">system_update</span>
+        <span>New version ready!</span>
+        <button onclick="forceAppUpdate()" style="background: #fff; color: #4F46E5; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; cursor: pointer;">Update Now</button>
+      `;
+      document.body.appendChild(banner);
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-name: Build APK
+﻿name: Build APK
 
 on:
   push:
@@ -19,28 +19,31 @@ jobs:
           java-version: '17'
 
       - name: Setup Flutter
-        id: flutter-action
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
+          cache: true
 
       - name: Create local.properties
         run: |
-          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+          FLUTTER_SDK=$(dirname $(dirname $(which flutter)))
+          echo "flutter.sdk=$FLUTTER_SDK" > android/local.properties
           echo "flutter.versionName=1.0.0" >> android/local.properties
           echo "flutter.versionCode=1" >> android/local.properties
           echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
+          echo "Contents of local.properties:"
           cat android/local.properties
 
       - name: Get dependencies
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release --no-obfuscate
+        run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: student-attendance-app
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30

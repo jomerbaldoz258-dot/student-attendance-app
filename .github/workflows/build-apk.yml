@@ -1,4 +1,4 @@
-﻿name: Build APK
+name: Build APK
 
 on:
   push:
@@ -32,7 +32,6 @@ jobs:
           echo "flutter.versionName=1.0.0" >> android/local.properties
           echo "flutter.versionCode=1" >> android/local.properties
           echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
-          echo "Contents of local.properties:"
           cat android/local.properties
 
       - name: Get dependencies
